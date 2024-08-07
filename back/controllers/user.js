@@ -21,10 +21,6 @@ const getUsers = async (req, res) => {
 
 const getUser = async (req, res) => {
   try {
-    const contentType = req.headers["content-type"];
-    if (!contentType || contentType !== "application/json")
-      return res.status(400).json({ "msg": "Invalid Content-Type. Expected 'application/json'." });
-
     const user = await prisma.user.findUnique({
       "where": { "id": String(req.params.id) },
       "select": {
