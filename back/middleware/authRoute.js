@@ -1,3 +1,5 @@
+import jwt from "jsonwebtoken";
+
 const authRoute = async (req, res, next) => {
   try {
     const authHeader = req.headers["authorization"];
@@ -5,12 +7,7 @@ const authRoute = async (req, res, next) => {
       return res.status(409).json({ msg: "No token provided" });
 
     const token = authHeader.split(" ")[1];
-
-    console.log(token);
-
     const payload = jwt.verify(token, process.env.JWT_SECRET);
-
-    console.log(payload);
 
     req.user = payload;
 
