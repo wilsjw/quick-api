@@ -31,5 +31,6 @@ enum SkillLevel {
   MASTER
   GRAND_MASTER
   EMPEROR
+  DEMIGOD
   GOD
 }
