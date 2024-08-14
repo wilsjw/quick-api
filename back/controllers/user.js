@@ -11,9 +11,7 @@ const createUser = async (req, res) => {
         .json({ msg: "Invalid Content-Type. Expected 'application/json'." });
 
     let user = await prisma.user.findUnique({
-      where: {
-        OR: [{ name: { equals: String(req.body.name) } }],
-      },
+      where: { email: String(req.body.email) },
       select: {
         id: true,
         name: true,
@@ -25,7 +23,7 @@ const createUser = async (req, res) => {
     if (user)
       return res
         .status(404)
-        .json({ msg: `User '${req.body.name} already exists.'` });
+        .json({ msg: `Email '${req.body.email} already in use.'` });
 
     user = await prisma.user.create({
       data: { ...req.body },
