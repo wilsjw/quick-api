@@ -10,6 +10,9 @@ const createUser = async (req, res) => {
         .status(400)
         .json({ msg: "Invalid Content-Type. Expected 'application/json'." });
 
+    if (!req.user || req.user.skill !== "GOD")
+      return res.status(403).json({ msg: "Not authorized to make this request." });
+
     let user = await prisma.user.findUnique({
       where: { email: String(req.body.email) },
       select: {
@@ -76,6 +79,15 @@ const getUser = async (req, res) => {
 
 const updateUser = async (req, res) => {
   try {
+    const contentType = req.headers["content-type"];
+    if (!contentType || contentType !== "application/json")
+      return res
+        .status(400)
+        .json({ msg: "Invalid Content-Type. Expected 'application/json'." });
+
+    if (!req.user || !(req.user.id === req.params.id || req.user.skill === "GOD"))
+      return res.status(403).json({ msg: "Not authorized to make this request." });
+
     let user = await prisma.user.findUnique({
       where: { id: String(req.params.id) },
       select: {
@@ -88,10 +100,43 @@ const updateUser = async (req, res) => {
 
     if (!user) return res.status(404).json({ msg: "No user found." });
 
-    return res.status(200).json({ data: user });
+    user = await prisma.user.update({
+      where: { id: String(req.params.id) },
+      data: { ...req.body },
+    });
+    delete user.password;
+
+    return res.status(200).json({
+      msg: `User '${user.name}' successfully updated!`,
+      data: user,
+    });
   } catch (error) {
     return res.status(500).json({ msg: error.message });
   }
 };
 
-export { createUser, getUsers, getUser };
+const deleteUser = async (req, res) => {
+  try {
+    if (!req.user || !(req.user.id === req.params.id || req.user.skill === "GOD"))
+      return res.status(403).json({ msg: "Not authorized to make this request." });
+
+    const user = await prisma.user.findUnique({
+      where: { id: String(req.params.id) },
+    });
+
+    if (!user) return res.status(404).json({ msg: "No user found." });
+
+    await prisma.user.delete({
+      where: { id: String(req.params.id) },
+    });
+
+    return res.status(200).json({
+      msg: `User '${user.name}' successfully updated!`,
+      data: user,
+    });
+  } catch (error) {
+    return res.status(500).json({ msg: error.message });
+  }
+};
+
+export { createUser, getUsers, getUser, updateUser, deleteUser };
